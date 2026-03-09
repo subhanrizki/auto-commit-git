@@ -1,36 +1,46 @@
 name: Auto commit
 
 on:
-
   push:
     branches:
       - master
-      
+
   schedule:
-  - cron: "0,10,30,50 1,3,5,7,9,11,13,15,17,19,21,23 * * *" # See https://crontab.guru/#0_7,9,11_*_*_1,3
+    - cron: "0 */2 * * 1"  # Senin tiap 2 jam
+    - cron: "0 */3 * * 2"  # Selasa tiap 3 jam
+    - cron: "0 */2 * * 3"  # Rabu tiap 2 jam
+    - cron: "0 */5 * * 4"  # Kamis tiap 5 jam
+    - cron: "0 */2 * * 5"  # Jumat tiap 2 jam
+    - cron: "0 */4 * * 6"  # Sabtu tiap 4 jam
+    - cron: "0 */8 * * 0"  # Minggu tiap 8 jam
+
+
+  workflow_dispatch:
 
 jobs:
   auto_commit:
     runs-on: ubuntu-latest
-    steps:
-      - name: DEBUG 
-        run: echo "::debug::Ref = ${{github.ref}}"
-      - uses: actions/checkout@v3      
-        with:
-         persist-credentials: false
-         fetch-depth: 0
 
-      - name: Modify last update
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update LAST_UPDATED
         run: |
-          d=`date '+%Y-%m-%dT%H:%M:%SZ'`
-          echo $d > LAST_UPDATED
-          
+          echo "Updated at $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > LAST_UPDATED
+
       - name: Commit changes
         run: |
-          git config --local user.email "212310020@student.ibik.ac.id"
+          git config --local user.email "subhannrizkii@gmail.com"
           git config --local user.name "subhanrizki"
-          git add -A
-          
+
+          git add LAST_UPDATED
+
           arr[0]="chore(bot): 😂 auto commit"
           arr[1]="chore(bot): 😱 auto commit"
           arr[2]="chore(bot): 👿 auto commit"
@@ -41,14 +51,12 @@ jobs:
           arr[7]="chore(bot): 🤖 auto commit"
           arr[8]="chore(bot): 🟩 auto commit"
           arr[9]="chore(bot): 👻 auto commit"
-          
-          rand=$[$RANDOM % ${#arr[@]}]
-          
-          git commit -m "${arr[$rand]}"
-          
-      - name: Push Back
+
+          rand=$((RANDOM % 10))
+
+          git commit -m "${arr[$rand]}" || echo "No changes to commit"
+
+      - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
-          force: true
-          directory: '.'
           github_token: ${{ secrets.GITHUB_TOKEN }}
