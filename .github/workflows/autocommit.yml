@@ -36,7 +36,7 @@ jobs:
 
       - name: Commit changes
         run: |
-          git config --local user.email "subhannrizkii@gmail.com"
+          git config --local user.email "113665663+subhanrizki@users.noreply.github.com"
           git config --local user.name "subhanrizki"
 
           git add LAST_UPDATED
